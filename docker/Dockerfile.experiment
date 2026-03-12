@@ -1,0 +1,38 @@
+# Dockerfile.experiment
+# Isolated environment for running Keystone probe and understanding experiments.
+#
+# Usage:
+#   docker build -f DEMO/docker/Dockerfile.experiment -t keystone-exp .
+#   docker run --rm -v "$(pwd)/experiments:/experiments" keystone-exp python experiments/<script.py>
+#
+# For hardware access (Linux only):
+#   docker run --rm --device /dev/bus/usb --net host \
+#     -v "$(pwd)/experiments:/experiments" keystone-exp python experiments/<script.py>
+#
+# NOTE: NFC hardware experiments on Windows require running natively (no USB passthrough in
+#       Docker Desktop for Windows). Use the Docker container for non-hardware experiments only.
+
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# System deps for pyscard (PC/SC) on Linux
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    pcscd \
+    libpcsclite-dev \
+    libpcsclite1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Python deps
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy source (read-only in container)
+COPY keystone_nfc/ ./keystone_nfc/
+COPY folder_lock.py .
+
+# Experiments are mounted from host — not baked into image
+VOLUME ["/experiments"]
+
+# Output goes to mounted /experiments directory
+ENV PYTHONPATH=/app

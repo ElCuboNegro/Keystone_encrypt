@@ -1,0 +1,26 @@
+# Keystone Encrypt — runtime dependencies
+#
+# Installs keystone-nfc directly from the source repo plus all GUI/vault deps.
+#
+# Quickest install:
+#   pip install -r requirements.txt
+#
+# Or install keystone-nfc from PyPI once published:
+#   pip install keystone-nfc[gui,vault]
+
+# Core library (NFC card reader + PC/SC bindings)
+git+https://github.com/ElCuboNegro/Keystone.git#subdirectory=library&egg=keystone-nfc
+
+# Vault encryption
+cryptography>=41.0
+
+# Real-time file-system watcher
+watchdog>=4.0
+
+# System-tray icon
+pystray>=0.19
+Pillow>=10.0
+
+# Windows only: WMI listener for real-time card-removal detection (AsusAtkWmiEvent)
+# Without this, removal detection falls back to best-effort PC/SC polling mode.
+pywin32>=306; sys_platform == 'win32'
